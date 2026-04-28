@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
         audios: 'mp3, wav, ogg, m4a',
         codes: 'py, v, sv, c, cpp, js, html, css, json, md, sh, java, m',
         plaintext: 'txt, log, csv',
+        archives: 'zip, tgz, gz',
         excels: 'xls, xlsx',
         powerpoints: 'ppt, pptx',
         jupyter: 'ipynb'
