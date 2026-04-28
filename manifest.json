@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "NTU COOL Text File Previewer",
   "version": "1.4",
-  "description": "支援自訂副檔名預覽分類的檔案瀏覽器",
+  "description": "支援NTU COOL上多種副檔名預覽的檔案瀏覽器",
   "permissions": [
     "storage"
   ],
