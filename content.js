@@ -1,7 +1,3 @@
-const style = document.createElement('style');
-style.textContent = `.file-upload-submission-info__link.zip::before{display:none !important}.file-upload-submission:has(.zip) .modal_preview_link{display:none !important}.file-upload-submission-info__link.zip{padding-left:0 !important;background-image:none !important}#content.hide-native-preview #doc_preview,#content.hide-native-preview .viewerContainer{display:none !important}`;
-document.head.appendChild(style);
-
 (function() {
     'use strict';
 
@@ -15,7 +11,7 @@ document.head.appendChild(style);
         excels: 'xls, xlsx',
         powerpoints: 'ppt, pptx'
     };
-    
+
     const langMap = { py: 'python', v: 'verilog', sv: 'verilog', c: 'c', cpp: 'cpp', js: 'javascript', html: 'xml', css: 'css', json: 'json', md: 'markdown', sh: 'bash', java: 'java', m: 'matlab' };
     let extMap = {};
 
@@ -55,6 +51,8 @@ document.head.appendChild(style);
         if (cssText) el.style.cssText = cssText;
         return el;
     }
+
+    
 
     function generateViewerHTML(filename, fileInfo, absoluteUrl, textContent, isFullScreen) {
         let bodyHtml = '', extraDependencies = '', parserScript = '';
@@ -177,6 +175,17 @@ document.head.appendChild(style);
         });
     }
 
+    function injectDynamicCSS() {
+        const allExtClasses = Object.keys(extMap).map(ext => `.${ext}`).join(', ');
+        if (!allExtClasses) return;
+        const style = document.createElement('style');
+        style.textContent = `
+            .file-upload-submission:has(${allExtClasses}) .modal_preview_link { display: none !important; }
+            #content.hide-native-preview #doc_preview, #content.hide-native-preview .viewerContainer { display: none !important; }
+        `;
+        document.head.appendChild(style);
+    }
+
     function injectPreviewButtons() {
         document.querySelectorAll('.file-upload-submission').forEach((sub) => {
             const attachmentDiv = sub.querySelector('.file-upload-submission-attachment');
@@ -277,6 +286,7 @@ document.head.appendChild(style);
 
     chrome.storage.sync.get(defaultSettings, (items) => {
         parseSettings(items);
+        injectDynamicCSS();
         document.body ? observeDOM() : document.addEventListener('DOMContentLoaded', observeDOM);
     });
 })();
