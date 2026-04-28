@@ -197,13 +197,13 @@ async function parseArchiveFile() {
     const ext = window.TARGET_EXT;
     
     document.getElementById('render-content').innerHTML = `
-        <div id="archive-container" style="display:flex;height:75vh;min-height:450px;overflow:hidden;font-family:sans-serif;border:1px solid #ddd;border-radius:4px;position:relative;">
+        <div id="archive-container" style="display:flex;width:1600px;max-width:100%;box-sizing:border-box;height:75vh;min-height:450px;overflow:hidden;font-family:sans-serif;border:1px solid #ddd;border-radius:4px;position:relative;margin:0 auto;">
             <div id="archive-sidebar" style="width:300px;min-width:150px;max-width:80%;display:flex;flex-direction:column;background:#f9f9f9;overflow:hidden;flex-shrink:0;">
                 <div style="padding:15px 15px 10px;border-bottom:1px solid #eee;font-weight:bold;color:#333;background:#f1f1f1;position:sticky;top:0;z-index:1;">目錄樹</div>
                 <div id="archive-tree" style="flex-grow:1;padding:15px;overflow:auto;">讀取中...</div>
             </div>
             <div id="archive-resizer" style="width:5px;background:#e1e4e8;cursor:col-resize;flex-shrink:0;transition:background 0.2s;z-index:10;border-left:1px solid #ddd;border-right:1px solid #ddd;" onmouseover="this.style.background='#c8ccd1'" onmouseout="this.style.background='#e1e4e8'"></div>
-            <div id="archive-viewer-content" style="flex-grow:1;background:#fff;overflow:auto;position:relative;min-width:150px;">
+            <div id="archive-viewer-content" style="flex: 1 1 0%;background:#fff;overflow:auto;position:relative;min-width:150px;">
                 <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#999;font-size:14px;">點擊左側支援的檔案進行預覽</div>
             </div>
         </div>
@@ -229,10 +229,10 @@ async function parseArchiveFile() {
         if (!isResizing) return;
         const containerRect = container.getBoundingClientRect();
         let newWidth = e.clientX - containerRect.left;
+        const maxSidebarWidth = container.clientWidth - 5;
         
-        // Apply constraints to prevent dragging out of bounds
-        if (newWidth < 150) newWidth = 150;
-        if (newWidth > containerRect.width - 150) newWidth = containerRect.width - 150;
+        if (newWidth < 0) newWidth = 0;
+        if (newWidth > maxSidebarWidth) newWidth = maxSidebarWidth;
         
         sidebar.style.width = newWidth + 'px';
     });
