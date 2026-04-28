@@ -69,47 +69,58 @@ async function handleFileClick(e) {
     e.target.style.fontWeight = 'bold';
 
     const ext = path.split('.').pop().toLowerCase();
-    const isText = SUPPORTED_TEXT_EXTS.includes(ext) || ext === path.toLowerCase() /* no extension, treat as text */;
+    const isText = SUPPORTED_TEXT_EXTS.includes(ext) || !path.includes('.');
     const isImage = SUPPORTED_IMAGE_EXTS.includes(ext);
+    const isPdf = ext === 'pdf';
     
-    if (!isText && !isImage) {
-        alert('不支援預覽此格式的檔案：' + ext);
+    const viewer = document.getElementById('archive-viewer-content');
+    
+    if (!isText && !isImage && !isPdf) {
+        viewer.innerHTML = `<div style="padding:20px;text-align:center;color:#666;display:flex;align-items:center;justify-content:center;height:100%;">不支援預覽此格式的檔案：${escapeHTML(ext)}</div>`;
         return;
     }
-
-    const viewer = document.getElementById('archive-viewer-content');
-    viewer.innerHTML = '<div style="padding:20px;color:#666;">讀取檔案中...</div>';
-
+    
+    viewer.innerHTML = `<div style="padding:20px;color:#666;">讀取中...</div>`;
+    
     try {
         let content = null;
-        let isBase64 = false;
-
+        let isBlobUrl = false;
+        
         if (window.archiveData.type === 'zip') {
-            const file = window.archiveData.zipInstance.files[path];
-            if (!file) throw new Error('找不到檔案');
-            if (isImage) {
-                const b64 = await file.async('base64');
-                content = `data:image/${ext === 'svg' ? 'svg+xml' : ext};base64,${b64}`;
-                isBase64 = true;
+            const z = window.archiveData.zipInstance;
+            const fileInfo = z.files[path];
+            
+            if (isImage || isPdf) {
+                const mimeType = isPdf ? 'application/pdf' : `image/${ext === 'svg' ? 'svg+xml' : ext}`;
+                // JSZip can directly output a typed array which we can wrap in a blob with proper mime type
+                const u8 = await fileInfo.async('uint8array');
+                const blob = new Blob([u8], { type: mimeType });
+                content = URL.createObjectURL(blob);
+                isBlobUrl = true;
             } else {
-                content = await file.async('text');
+                content = await fileInfo.async('text');
             }
         } else if (window.archiveData.type === 'tgz') {
             const fileInfo = window.archiveData.files.find(f => f.path === path);
             if (!fileInfo || fileInfo.dataOffset === undefined) throw new Error('找不到檔案資料');
             const chunk = window.archiveData.tgzData.slice(fileInfo.dataOffset, fileInfo.dataOffset + fileInfo.size);
             
-            if (isImage) {
-                const blob = new Blob([chunk], { type: `image/${ext === 'svg' ? 'svg+xml' : ext}` });
+            if (isImage || isPdf) {
+                const mimeType = isPdf ? 'application/pdf' : `image/${ext === 'svg' ? 'svg+xml' : ext}`;
+                const blob = new Blob([chunk], { type: mimeType });
                 content = URL.createObjectURL(blob);
-                isBase64 = true;
+                isBlobUrl = true;
             } else {
                 content = new TextDecoder().decode(chunk);
             }
         }
 
-        if (isBase64) {
-            viewer.innerHTML = `<div style="padding:20px;text-align:center;height:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;"><img src="${content}" style="max-width:100%;max-height:100%;border:1px solid #ddd;box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>`;
+        if (isBlobUrl) {
+            if (isPdf) {
+                viewer.innerHTML = `<div style="height:100%;box-sizing:border-box;"><iframe src="${content}" style="width:100%;height:100%;border:none;"></iframe></div>`;
+            } else {
+                viewer.innerHTML = `<div style="padding:20px;text-align:center;height:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;"><img src="${content}" style="max-width:100%;max-height:100%;border:1px solid #ddd;box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>`;
+            }
         } else if (ext === 'ipynb') {
             try {
                 const data = JSON.parse(content);
@@ -170,7 +181,8 @@ async function handleFileClick(e) {
         } else {
             const langClass = LANG_MAP[ext] || ext;
             viewer.innerHTML = `<pre style="margin:0;padding:15px;font-size:14px;white-space:pre-wrap;word-wrap:break-word;background:#f6f8fa;height:100%;box-sizing:border-box;overflow:auto;"><code class="language-${langClass}">${escapeHTML(content)}</code></pre>`;
-            if (window.hljs) {
+            // Limit highlight.js to 100KB to prevent UI freezing
+            if (window.hljs && content.length < 100000) {
                 window.hljs.highlightElement(viewer.querySelector('code'));
             }
         }
@@ -186,7 +198,7 @@ async function parseArchiveFile() {
     
     document.getElementById('render-content').innerHTML = `
         <div style="display:flex;height:75vh;min-height:450px;overflow:hidden;font-family:sans-serif;border:1px solid #ddd;border-radius:4px;">
-            <div style="width:300px;min-width:200px;border-right:1px solid #ddd;display:flex;flex-direction:column;background:#f9f9f9;resize:horizontal;overflow:auto;">
+            <div id="archive-sidebar" style="width:300px;min-width:200px;border-right:1px solid #ddd;display:flex;flex-direction:column;background:#f9f9f9;resize:horizontal;overflow:auto;">
                 <div style="padding:15px 15px 10px;border-bottom:1px solid #eee;font-weight:bold;color:#333;background:#f1f1f1;position:sticky;top:0;">目錄樹</div>
                 <div id="archive-tree" style="flex-grow:1;padding:15px;overflow:auto;">讀取中...</div>
             </div>
@@ -195,6 +207,19 @@ async function parseArchiveFile() {
             </div>
         </div>
     `;
+
+    // Fix iframe mouse event capture during resize
+    const sidebar = document.getElementById('archive-sidebar');
+    const viewer = document.getElementById('archive-viewer-content');
+    sidebar.addEventListener('mousedown', (e) => {
+        const rect = sidebar.getBoundingClientRect();
+        if (e.clientX > rect.right - 15) {
+            viewer.style.pointerEvents = 'none';
+        }
+    });
+    window.addEventListener('mouseup', () => {
+        viewer.style.pointerEvents = 'auto';
+    });
 
     try {
         if (ext === 'zip') {
