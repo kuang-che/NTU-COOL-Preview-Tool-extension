@@ -15,7 +15,7 @@ document.head.appendChild(style);
         excels: 'xls, xlsx',
         powerpoints: 'ppt, pptx'
     };
-
+    
     const langMap = { py: 'python', v: 'verilog', sv: 'verilog', c: 'c', cpp: 'cpp', js: 'javascript', html: 'xml', css: 'css', json: 'json', md: 'markdown', sh: 'bash', java: 'java', m: 'matlab' };
     let extMap = {};
 
