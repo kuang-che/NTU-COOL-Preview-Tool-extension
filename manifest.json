@@ -1,13 +1,25 @@
 {
   "manifest_version": 3,
   "name": "NTU COOL Text File Previewer",
-  "version": "1.3",
+  "version": "1.4",
   "description": "支援自訂副檔名預覽分類的檔案瀏覽器",
   "permissions": [
     "storage"
   ],
+    "icons": {
+    "16": "image/16.png",
+    "32": "image/32.png",
+    "48": "image/48.png",
+    "128": "image/128.png"
+  },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "image/16.png",
+      "32": "image/32.png",
+      "48": "image/48.png",
+      "128": "image/128.png"
+    }
   },
   "content_scripts": [
     {
