@@ -197,28 +197,53 @@ async function parseArchiveFile() {
     const ext = window.TARGET_EXT;
     
     document.getElementById('render-content').innerHTML = `
-        <div style="display:flex;height:75vh;min-height:450px;overflow:hidden;font-family:sans-serif;border:1px solid #ddd;border-radius:4px;">
-            <div id="archive-sidebar" style="width:300px;min-width:200px;border-right:1px solid #ddd;display:flex;flex-direction:column;background:#f9f9f9;resize:horizontal;overflow:auto;">
-                <div style="padding:15px 15px 10px;border-bottom:1px solid #eee;font-weight:bold;color:#333;background:#f1f1f1;position:sticky;top:0;">目錄樹</div>
+        <div id="archive-container" style="display:flex;height:75vh;min-height:450px;overflow:hidden;font-family:sans-serif;border:1px solid #ddd;border-radius:4px;position:relative;">
+            <div id="archive-sidebar" style="width:300px;min-width:150px;max-width:80%;display:flex;flex-direction:column;background:#f9f9f9;overflow:hidden;flex-shrink:0;">
+                <div style="padding:15px 15px 10px;border-bottom:1px solid #eee;font-weight:bold;color:#333;background:#f1f1f1;position:sticky;top:0;z-index:1;">目錄樹</div>
                 <div id="archive-tree" style="flex-grow:1;padding:15px;overflow:auto;">讀取中...</div>
             </div>
-            <div id="archive-viewer-content" style="flex-grow:1;background:#fff;overflow:auto;position:relative;">
+            <div id="archive-resizer" style="width:5px;background:#e1e4e8;cursor:col-resize;flex-shrink:0;transition:background 0.2s;z-index:10;border-left:1px solid #ddd;border-right:1px solid #ddd;" onmouseover="this.style.background='#c8ccd1'" onmouseout="this.style.background='#e1e4e8'"></div>
+            <div id="archive-viewer-content" style="flex-grow:1;background:#fff;overflow:auto;position:relative;min-width:150px;">
                 <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#999;font-size:14px;">點擊左側支援的檔案進行預覽</div>
             </div>
         </div>
     `;
 
-    // Fix iframe mouse event capture during resize
+    // Custom JS Resizer logic
     const sidebar = document.getElementById('archive-sidebar');
+    const resizer = document.getElementById('archive-resizer');
     const viewer = document.getElementById('archive-viewer-content');
-    sidebar.addEventListener('mousedown', (e) => {
-        const rect = sidebar.getBoundingClientRect();
-        if (e.clientX > rect.right - 15) {
-            viewer.style.pointerEvents = 'none';
-        }
+    const container = document.getElementById('archive-container');
+
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizing = true;
+        document.body.style.cursor = 'col-resize';
+        viewer.style.pointerEvents = 'none'; // Prevent iframe from capturing mouse
+        resizer.style.background = '#0066cc'; // Highlight color while dragging
     });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const containerRect = container.getBoundingClientRect();
+        let newWidth = e.clientX - containerRect.left;
+        
+        // Apply constraints to prevent dragging out of bounds
+        if (newWidth < 150) newWidth = 150;
+        if (newWidth > containerRect.width - 150) newWidth = containerRect.width - 150;
+        
+        sidebar.style.width = newWidth + 'px';
+    });
+
     window.addEventListener('mouseup', () => {
-        viewer.style.pointerEvents = 'auto';
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.cursor = '';
+            viewer.style.pointerEvents = 'auto';
+            resizer.style.background = '#e1e4e8';
+        }
     });
 
     try {
