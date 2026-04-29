@@ -4,8 +4,9 @@ const escapeHTML = (str) => {
 };
 
 async function parseExcelFile() {
-    if (!window.TARGET_URL) return;
-    const absoluteUrl = window.TARGET_URL;
+    const absoluteUrl = window.TARGET_URL || document.body.getAttribute('data-url');
+    if (!absoluteUrl) return;
+    window.TARGET_URL = absoluteUrl;
     
     try {
         const w = XLSX.read(await (await fetch(absoluteUrl)).arrayBuffer(), { type: 'array' });
