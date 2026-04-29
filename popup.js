@@ -31,4 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { status.textContent = ''; }, 3000);
         });
     });
+    document.getElementById('open-github').addEventListener('click', () => {
+    chrome.tabs.create({ url: 'https://github.com/kuang-che/NTU-COOL-Preview-Tool-extension' });
+});
 });

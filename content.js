@@ -97,28 +97,25 @@
             bodyHtml = `<${category} src="${absoluteUrl}" controls style="max-width:100%;max-height:85vh;display:block;margin:0 auto;outline:none;"></${category}>`;
         } else if (category === 'archive') {
             const extUrl = chrome.runtime.getURL('js/archive_parser.js');
-            const targetParams = `<script>window.TARGET_URL="${absoluteUrl}"; window.TARGET_EXT="${ext}";</script>`;
             if (ext === 'zip') {
-                extraDependencies = `<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>`;
+                extraDependencies = `<script src="${chrome.runtime.getURL('js/jszip_v3.min.js')}"></script>`;
                 bodyHtml = `<div id="render-content"><div style="padding:15px;color:#666;">讀取 ZIP 結構中...</div></div>`;
-                parserScript = `${targetParams}<script src="${extUrl}"></script>`;
+                parserScript = `<script src="${extUrl}"></script>`;
             } else if (['tgz', 'gz'].includes(ext)) {
-                extraDependencies = `<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>`;
+                extraDependencies = `<script src="${chrome.runtime.getURL('js/pako.min.js')}"></script>`;
                 bodyHtml = `<div id="render-content"><div style="padding:15px;color:#666;">解壓與讀取 TGZ 結構中...</div></div>`;
-                parserScript = `${targetParams}<script src="${extUrl}"></script>`;
+                parserScript = `<script src="${extUrl}"></script>`;
             }
         } else if (category === 'excel') {
             const extUrl = chrome.runtime.getURL('js/excel_parser.js');
-            const targetParams = `<script>window.TARGET_URL="${absoluteUrl}"; window.TARGET_EXT="${ext}";</script>`;
-            extraDependencies = `<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>`;
+            extraDependencies = `<script src="${chrome.runtime.getURL('js/xlsx.full.min.js')}"></script>`;
             bodyHtml = `<div id="render-content" style="overflow-x:auto;padding:15px;">繪製表格中...</div>`;
-            parserScript = `${targetParams}<script src="${extUrl}"></script>`;
+            parserScript = `<script src="${extUrl}"></script>`;
         } else if (category === 'jupyter') {
             const extUrl = chrome.runtime.getURL('js/ipynb_parser.js');
-            const targetParams = `<script>window.TARGET_URL="${absoluteUrl}";</script>`;
-            extraDependencies = `<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>`;
+            extraDependencies = `<script src="${chrome.runtime.getURL('js/marked.min.js')}"></script>`;
             bodyHtml = `<div id="render-content" style="padding:20px;max-width:900px;margin:0 auto;font-family:sans-serif;">繪製 Notebook 中...</div>`;
-            parserScript = `${targetParams}<script src="${extUrl}"></script>`;
+            parserScript = `<script src="${extUrl}"></script>`;
         } else if (category === 'powerpoint') {
             const eu = chrome.runtime.getURL('');
             extraDependencies = `
@@ -140,69 +137,26 @@
                 </style>
             `;
             bodyHtml = `<div id="container"><div id="warper"><div id="result"></div></div></div>`;
-            parserScript = `
-                <script>
-                $(function(){
-                    var $container = $('#container');
-                    var $result = $('#result');
-                    function showError(msg) {
-                        $container.html('<div class="error-msg">簡報載入失敗：' + (msg || '發生未知錯誤，請檢查檔案格式') + '</div>');
-                    }
-                    try {
-                        if (typeof $result.pptxToHtml !== 'function') throw new Error('核心套件無法載入');
-                        $result.pptxToHtml({
-                            pptxFileUrl: "${absoluteUrl}",
-                            slideMode: !1,
-                            keyBoardShortCut: !1,
-                            slideModeConfig: {first:1, nav:!1, showPlayPauseBtn:!1, keyBoardShortCut:!1, showSlideNum:!1, showTotalSlideNum:!1, autoSlide:!1, randomAutoSlide:!1, loop:!1, background:"black", transition:"default", transitionTime:1}
-                        });
-                        function fitSlides(){
-                            var slideDom = $('.slide').first()[0];
-                            var realW = (slideDom && parseInt(slideDom.style.width,10)) || 1280;
-                            $('#warper').css('width', realW + 'px');
-                            var c = $container.width(), s = Math.min(1, c/(realW+2));
-                            $('#warper').css({'transform': 'scale('+s+')', 'transform-origin': 'top left'});
-                            var h = $('#warper')[0].getBoundingClientRect().height;
-                            if (h > 0) $container.css('height', (h+15) + 'px');
-                        }
-                        $(window).on('resize', fitSlides);
-                        var attempts = 0, maxAttempts = 40; 
-                        var l = setInterval(function(){
-                            if($('.slide').length > 0){
-                                fitSlides();
-                                clearInterval(l);
-                            } else {
-                                attempts++;
-                                if(attempts >= maxAttempts){
-                                    clearInterval(l);
-                                    showError('處理時間逾時');
-                                }
-                            }
-                        }, 250);
-                    } catch(e) {
-                        console.error('PPTX Parse Error:', e);
-                        showError(e.message);
-                    }
-                });
-                </script>
-            `;
+            parserScript = '';
         } else {
             bodyHtml = `<pre><code class="language-${lang}">${escapeHTML(textContent)}</code></pre>`;
         }
 
         const isCode = category === 'code';
         const codeDeps = (isCode || category === 'archive' || category === 'jupyter') ? `
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/verilog.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/matlab.min.js"></script>
+            <link rel="stylesheet" href="${chrome.runtime.getURL('css/github.min.css')}">
+            <script src="${chrome.runtime.getURL('js/highlight.min.js')}"></script>
+            <script src="${chrome.runtime.getURL('js/verilog.min.js')}"></script>
+            <script src="${chrome.runtime.getURL('js/matlab.min.js')}"></script>
             <style>pre{margin:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word}</style>
         ` : '';
-        const markedDeps = (category === 'archive' || category === 'jupyter') ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>` : '';
-        const initScript = isCode ? `<script>hljs.highlightAll();</script>` : '';
+        const markedDeps = (category === 'archive' || category === 'jupyter') ? 
+            `<script src="${chrome.runtime.getURL('js/marked.min.js')}"></script>` : '';
+        const bootstrapScript = `<script src="${chrome.runtime.getURL('js/iframe_bootstrap.js')}"></script>`;
+        const bodyTag = `<body data-url="${escapeHTML(absoluteUrl)}" data-ext="${escapeHTML(ext || '')}" data-category="${escapeHTML(category || '')}" data-i18n-copied="${escapeHTML(i18n.copied)}">`;
 
         if (!isFullScreen) {
-            return `<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><style>body{margin:0;padding:15px;height:100%;overflow:auto;box-sizing:border-box;font-family:sans-serif;}</style>${codeDeps}${markedDeps}${extraDependencies}</head><body>${bodyHtml}${initScript}${parserScript}</body></html>`;
+            return `<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><style>body{margin:0;padding:15px;height:100%;overflow:auto;box-sizing:border-box;font-family:sans-serif;}</style>${codeDeps}${markedDeps}${extraDependencies}</head>${bodyTag}${bodyHtml}${parserScript}${bootstrapScript}</body></html>`;
         }
 
         return `
@@ -225,7 +179,7 @@
                     .page{background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.2);padding:30px;transition:transform 0.15s;transform-origin:top center;min-width:60%;max-width:1200px;min-height:80vh;}
                 </style>
             </head>
-            <body>
+            ${bodyTag}
                 <div class="toolbar">
                     <div></div>
                     <div class="toolbar-center">${filename}</div>
@@ -240,36 +194,7 @@
                 <div class="viewerContainer">
                     <div id="zoom-content" class="${['video', 'audio'].includes(category) ? '' : 'page'}">${bodyHtml}</div>
                 </div>
-                ${initScript}${parserScript}
-                <script>
-                    const cb = document.getElementById('fs-copy-btn');
-                    if (cb) {
-                        const ot = cb.querySelector('span').innerText;
-                        cb.onclick = async () => {
-                            try {
-                                cb.querySelector('span').innerText = '...';
-                                await navigator.clipboard.writeText(await (await fetch("${absoluteUrl}")).text());
-                                cb.querySelector('span').innerText = '${i18n.copied}';
-                                setTimeout(() => cb.querySelector('span').innerText = ot, 2000);
-                            } catch (e) {}
-                        };
-                    }
-                    const db = document.getElementById('download');
-                    if (db) {
-                        db.onclick = () => {
-                            let u = "${absoluteUrl}";
-                            u += u.includes('?') ? '&download_frd=1' : '?download_frd=1';
-                            const a = document.createElement('a');
-                            a.href = u;
-                            a.target = '_blank';
-                            a.click();
-                        };
-                    }
-                    let sc = 1;
-                    const zc = document.getElementById('zoom-content');
-                    document.getElementById('zoomIn').onclick = () => { sc += 0.15; zc.style.transform = \`scale(\${sc})\`; };
-                    document.getElementById('zoomOut').onclick = () => { sc = Math.max(0.2, sc - 0.15); zc.style.transform = \`scale(\${sc})\`; };
-                </script>
+                ${parserScript}${bootstrapScript}
             </body>
             </html>
         `;
