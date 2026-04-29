@@ -235,10 +235,9 @@
 
             const contentArea = createEl('div', { className: 'ui-dialog-content ui-widget-content' }, 'padding:0;overflow:hidden;width:auto;min-height:0;display:block;');
             const dragOverlay = createEl('div', {}, 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:1004;display:none;');
-            const resizeHandle = createEl('div', {}, 'position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:se-resize;z-index:1005;background:linear-gradient(135deg, transparent 50%, #999 50%);opacity:0.8;');
-            
-            resizeHandle.onmouseenter = () => resizeHandle.style.opacity = '1';
-            resizeHandle.onmouseleave = () => resizeHandle.style.opacity = '0.8';
+            const resizeHandle = createEl('div', { 
+                className: 'ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se ui-icon-grip-diagonal-se' 
+            }, 'z-index: 1000;');
 
             previewContainer.append(dragOverlay, header, contentArea, resizeHandle);
             document.body.append(overlay, previewContainer);
