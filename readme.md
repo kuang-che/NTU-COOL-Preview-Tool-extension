@@ -41,15 +41,11 @@
 ## 使用的開源套件
 
 本專案的實現依賴於以下開源社群套件
-
-* 透過 CDN 引入：
-
-    * Highlight.js (用於程式碼語法高亮): https://highlightjs.org/
-    * JSZip (用於解析 ZIP 壓縮檔): https://stuk.github.io/jszip/
-    * Pako (用於解壓縮 TGZ/GZ 檔案): https://github.com/nodeca/pako
-    * SheetJS (用於讀取 Excel): https://sheetjs.com/
-* 直接包含於安裝資料夾中
-    * PPTXjs (用於渲染 PowerPoint): https://pptxjs.com/
+* Highlight.js (用於程式碼語法高亮): https://highlightjs.org/
+* JSZip (用於解析 ZIP 壓縮檔): https://stuk.github.io/jszip/
+* Pako (用於解壓縮 TGZ/GZ 檔案): https://github.com/nodeca/pako
+* SheetJS (用於讀取 Excel): https://sheetjs.com/
+* PPTXjs (用於渲染 PowerPoint): https://pptxjs.com/
 
 ## 開源協議
 
