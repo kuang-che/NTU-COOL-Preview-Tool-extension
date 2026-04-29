@@ -99,24 +99,24 @@
             const extUrl = chrome.runtime.getURL('js/archive_parser.js');
             const targetParams = `<script>window.TARGET_URL="${absoluteUrl}"; window.TARGET_EXT="${ext}";</script>`;
             if (ext === 'zip') {
-                extraDependencies = `<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>`;
+                extraDependencies = `<script src="${chrome.runtime.getURL('js/jszip_v3.min.js')}"></script>`;
                 bodyHtml = `<div id="render-content"><div style="padding:15px;color:#666;">讀取 ZIP 結構中...</div></div>`;
                 parserScript = `${targetParams}<script src="${extUrl}"></script>`;
             } else if (['tgz', 'gz'].includes(ext)) {
-                extraDependencies = `<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>`;
+                extraDependencies = `<script src="${chrome.runtime.getURL('js/pako.min.js')}"></script>`;
                 bodyHtml = `<div id="render-content"><div style="padding:15px;color:#666;">解壓與讀取 TGZ 結構中...</div></div>`;
                 parserScript = `${targetParams}<script src="${extUrl}"></script>`;
             }
         } else if (category === 'excel') {
             const extUrl = chrome.runtime.getURL('js/excel_parser.js');
             const targetParams = `<script>window.TARGET_URL="${absoluteUrl}"; window.TARGET_EXT="${ext}";</script>`;
-            extraDependencies = `<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>`;
+            extraDependencies = `<script src="${chrome.runtime.getURL('js/xlsx.full.min.js')}"></script>`;
             bodyHtml = `<div id="render-content" style="overflow-x:auto;padding:15px;">繪製表格中...</div>`;
             parserScript = `${targetParams}<script src="${extUrl}"></script>`;
         } else if (category === 'jupyter') {
             const extUrl = chrome.runtime.getURL('js/ipynb_parser.js');
             const targetParams = `<script>window.TARGET_URL="${absoluteUrl}";</script>`;
-            extraDependencies = `<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>`;
+            extraDependencies = `<script src="${chrome.runtime.getURL('js/marked.min.js')}"></script>`;
             bodyHtml = `<div id="render-content" style="padding:20px;max-width:900px;margin:0 auto;font-family:sans-serif;">繪製 Notebook 中...</div>`;
             parserScript = `${targetParams}<script src="${extUrl}"></script>`;
         } else if (category === 'powerpoint') {
@@ -192,13 +192,14 @@
 
         const isCode = category === 'code';
         const codeDeps = (isCode || category === 'archive' || category === 'jupyter') ? `
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/verilog.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/matlab.min.js"></script>
+            <link rel="stylesheet" href="${chrome.runtime.getURL('css/github.min.css')}">
+            <script src="${chrome.runtime.getURL('js/highlight.min.js')}"></script>
+            <script src="${chrome.runtime.getURL('js/verilog.min.js')}"></script>
+            <script src="${chrome.runtime.getURL('js/matlab.min.js')}"></script>
             <style>pre{margin:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word}</style>
         ` : '';
-        const markedDeps = (category === 'archive' || category === 'jupyter') ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>` : '';
+        const markedDeps = (category === 'archive' || category === 'jupyter') ? 
+            `<script src="${chrome.runtime.getURL('js/marked.min.js')}"></script>` : '';
         const initScript = isCode ? `<script>hljs.highlightAll();</script>` : '';
 
         if (!isFullScreen) {
