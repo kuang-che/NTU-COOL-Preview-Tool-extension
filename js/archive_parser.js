@@ -195,6 +195,13 @@ function setupResizer() {
         resizer.style.background = '#0066cc';
     });
 
+    resizer.addEventListener('mouseover', () => {
+        if (!isResizing) resizer.style.background = '#c8ccd1';
+    });
+    resizer.addEventListener('mouseout', () => {
+        if (!isResizing) resizer.style.background = '#e1e4e8';
+    });
+
     window.addEventListener('mousemove', (e) => {
         if (!isResizing) return;
         const containerRect = container.getBoundingClientRect();
@@ -213,8 +220,11 @@ function setupResizer() {
 }
 
 async function parseArchiveFile() {
-    if (!window.TARGET_URL || !window.TARGET_EXT) return;
-    const { TARGET_URL: absoluteUrl, TARGET_EXT: ext } = window;
+    const absoluteUrl = window.TARGET_URL || document.body.getAttribute('data-url');
+    const ext = window.TARGET_EXT || document.body.getAttribute('data-ext');
+    if (!absoluteUrl || !ext) return;
+    window.TARGET_URL = absoluteUrl;
+    window.TARGET_EXT = ext;
     
     document.getElementById('render-content').innerHTML = `
         <div id="archive-container" style="display:flex;width:1600px;max-width:100%;box-sizing:border-box;height:75vh;min-height:450px;overflow:hidden;font-family:sans-serif;border:1px solid #ddd;border-radius:4px;position:relative;margin:0 auto;">
@@ -222,7 +232,7 @@ async function parseArchiveFile() {
                 <div style="padding:15px 15px 10px;border-bottom:1px solid #eee;font-weight:bold;color:#333;background:#f1f1f1;position:sticky;top:0;z-index:1;">檔案</div>
                 <div id="archive-tree" style="flex-grow:1;padding:15px;overflow:auto;">讀取中...</div>
             </div>
-            <div id="archive-resizer" style="width:5px;background:#e1e4e8;cursor:col-resize;flex-shrink:0;transition:background 0.2s;z-index:10;border-left:1px solid #ddd;border-right:1px solid #ddd;" onmouseover="this.style.background='#c8ccd1'" onmouseout="this.style.background='#e1e4e8'"></div>
+            <div id="archive-resizer" style="width:5px;background:#e1e4e8;cursor:col-resize;flex-shrink:0;transition:background 0.2s;z-index:10;border-left:1px solid #ddd;border-right:1px solid #ddd;"></div>
             <div id="archive-viewer-content" style="flex: 1 1 0%;background:#fff;overflow:auto;position:relative;min-width:150px;">
                 <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#999;font-size:14px;">點擊左側支援的檔案進行預覽</div>
             </div>

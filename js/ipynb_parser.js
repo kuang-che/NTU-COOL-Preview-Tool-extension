@@ -4,7 +4,9 @@ const escapeHTML = (str) => {
 };
 
 async function parseIpynb() {
-    if (!window.TARGET_URL) return;
+    const absoluteUrl = window.TARGET_URL || document.body.getAttribute('data-url');
+    if (!absoluteUrl) return;
+    window.TARGET_URL = absoluteUrl;
     const renderContent = document.getElementById('render-content');
     
     try {
