@@ -397,7 +397,11 @@
             btn.onclick = (e) => {
                 e.preventDefault(); e.stopPropagation();
                 const dW = Math.min(900, window.innerWidth * 0.95), dH = 585;
-                Object.assign(previewContainer.style, { width: dW + 'px', left: Math.round((window.innerWidth - dW - 16) / 2) + 'px', top: (window.scrollY + 98) + 'px', height: dH + 'px', display: 'block' });
+                const left_pc = Math.floor((window.innerWidth / 40) - 7);
+                const left_mobile = Math.round((window.innerWidth * 0.025));
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const targetLeft = isMobile ? left_mobile : left_pc;
+                Object.assign(previewContainer.style, { width: dW + 'px', left: targetLeft + 'px', top: (window.scrollY + 98) + 'px', height: dH + 'px', display: 'block' });
                 overlay.style.display = 'block';
                 contentArea.innerHTML = `<div style="padding:15px;color:#666;">${i18n.loading}</div>`;
 
