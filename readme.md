@@ -1,7 +1,10 @@
 # NTU COOL 檔案預覽小幫手 (NTU COOL File Previewer)
 
 專為 NTU COOL（基於 Canvas LMS）設計的瀏覽器擴充功能。本套件讓學生與使用者不需下載檔案，即可直接在瀏覽器內快速預覽多種格式的附件內容，大幅提升學習與批改作業的效率。
-
+## 現已上架chrome web store，建議從官方途徑安裝
+* https://chromewebstore.google.com/detail/dnnoabdkpihdjgjpofdmciejemnaakie?utm_source=item-share-cb
+* 喜歡的話按個五星好評，謝謝！
+* 由於程式有因適配相關政策稍作修改，欲調適上傳至store的程式，請切換至Extension分支。
 ## 特色功能
 
 * **雙區域無縫支援**：
