@@ -4,7 +4,7 @@
 ## 現已上架chrome web store，建議從官方途徑安裝
 * https://chromewebstore.google.com/detail/dnnoabdkpihdjgjpofdmciejemnaakie?utm_source=item-share-cb
 * 喜歡的話按個五星好評，謝謝！
-* 由於程式有因適配相關政策稍作修改，欲調適上傳至store的程式，請切換至Extension分支。
+* 由於程式有因適配相關政策稍作修改，欲調試上傳至store的程式，請切換至Extension分支。
 ## 特色功能
 
 * **雙區域無縫支援**：
