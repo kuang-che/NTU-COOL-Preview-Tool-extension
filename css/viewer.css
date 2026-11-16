@@ -1,0 +1,44 @@
+/* 檢視器外殼：數值取自 COOL 原生文件檢視器（predoc）的實際樣式。
+   響應式規則同原生：> 1024px 所有按鈕直接顯示；≤ 1024px 縮放與旋轉收進「»」選單；≤ 640px 下載也收進去。 */
+html{font-family:Helvetica,Arial,sans-serif}
+html,body{margin:0;padding:0;height:100%}
+body{display:flex;flex-direction:column;overflow:hidden;background:#fff}
+body.paged{background:#808080}
+.toolbar{position:relative;flex:0 0 32px;height:32px;background-color:#f7f7f7;z-index:10}
+.toolbar-right{float:right;padding-top:4px}
+.toolbar-center{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap}
+.toolbarField{width:40px;padding:4px 7px;margin:3px 0;border:1px solid #000;border-radius:2px;background:transparent;color:#000;font:16px/16px Arial;text-align:right;outline:none;-moz-appearance:textfield}
+.toolbarField::-webkit-inner-spin-button,.toolbarField::-webkit-outer-spin-button{appearance:none;margin:0}
+.toolbarLabel{display:inline-block;min-width:16px;padding:6px;margin:2px;border:1px solid transparent;font-size:16px;line-height:14px;user-select:none;cursor:default}
+.splitToolbarButton{display:inline-block;margin:2px 2px 0}
+.toolbarButton{display:inline-block;box-sizing:border-box;width:28px;height:22px;padding:1px 6px;border:none;background-color:#f7f7f7;color:#000;cursor:pointer;vertical-align:top}
+/* 與原生相同：圖示是按鈕內的行內元素、對齊文字基線，量到的位置為按鈕 y=6、圖示 y=7。
+   不可改成 display:block 或 vertical-align:middle，<button> 會把內容垂直置中而往下偏 2~3px */
+.toolbarButton{font:16px Arial}
+.toolbarButton svg,.toolbarButton img,.secondaryToolbarButton svg{width:16px;height:16px}
+.secondaryToolbar{position:absolute;top:36px;right:3px;padding:6px 0 10px;z-index:30000;background-color:#f7f7f7;display:grid;box-shadow:0 1px 5px rgba(12,12,13,.2),0 0 0 1px rgba(12,12,13,.2);border-radius:2px}
+.secondaryToolbarButton{padding:1px 6px;border:none;outline:none;background-color:#f7f7f7;color:#000;font:16px Arial;text-align:left;white-space:nowrap;cursor:pointer}
+.secondaryToolbarButton:hover{background-color:#dfdfdf}
+.hiddenLargeView,.hiddenMediumView{display:none}
+.hidden{display:none!important}
+@media (max-width:1024px){.hiddenLargeView{display:inline-block}.visibleLargeView{display:none}}
+@media (max-width:640px){.hiddenMediumView{display:inline-block}.visibleMediumView{display:none}}
+@media (min-width:1025px){.secondaryToolbar{display:none}}
+.rot-wrap{position:relative;margin:0 auto}
+#viewerContainer{flex:1;overflow:auto}
+#zoom-content{box-sizing:border-box;padding:15px}
+/* 同原生的 .page：內容寬 = 容器寬 - 40px，外圍 9px 透明邊（這裡用 padding）＋置中。
+   放大到超出容器時置中的留白會消失，但這 9px 仍在，所以四周始終看得到灰邊 */
+body.paged #zoom-content{box-sizing:content-box;width:calc(100% - 40px);margin:0 auto;padding:10px 9px 1px}
+pre{margin:0;font-size:14px;white-space:pre-wrap;word-wrap:break-word}
+.pv-error{color:#d9534f;padding:15px}
+
+/* 簡報 */
+#container{width:100%;overflow:hidden}
+#warper{margin:0;transform-origin:top left}
+/* PPTXjs：自己的載入條不用（顯示 .pp-msg）；外框的固定高度沒算到投影片間距，改為自動 */
+#result .slides-loadnig-msg{display:none!important}
+#all_slides_warpper{height:auto!important}
+.slide{width:100%!important;margin:0!important;border:none!important;border-radius:0!important;box-shadow:none!important;background:#fff}
+.pp-msg{text-align:center;padding:30px;color:#fff;font-size:16px}
+.pp-msg.error{color:#d9534f;background:#fff;font-size:18px}
