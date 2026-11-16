@@ -10,7 +10,7 @@
 * **廣泛的格式支援**：
   * **程式碼與純文字**：py, c, cpp, js, html, css, json, md, v, sv, txt, csv, ipynb 等（支援語法高亮與一鍵複製）。
   * **試算表**：xls, xlsx（支援多工作表切換預覽）。
-  * **簡報**：ppt, pptx。
+  * **簡報**：pptx（舊版 .ppt 格式無法解析，預設交給 COOL 原生預覽）。
   * **壓縮檔**：zip, tgz, gz。
   * **多媒體**：常見的圖片（png, jpg, webp 等）、影片（mp4, webm）與音檔（mp3, wav）。
 * **沉浸式閱讀**：提供「全螢幕」功能，並內建畫面的放大/縮小工具，方便檢視圖表或小字體程式碼。
@@ -19,7 +19,7 @@
 
 由於所有檔案解析皆在「前端瀏覽器」完成，本套件具有以下限制，使用時請留意：
 
-1. **PowerPoint 簡報 (PPT/PPTX)**：採用前端轉譯渲染，複雜的排版、自訂字體、動畫與特殊圖形可能會跑版或無法完美呈現。僅適合用來快速瀏覽簡報文字與基本架構。
+1. **PowerPoint 簡報 (PPTX)**：採用前端轉譯渲染，複雜的排版、自訂字體、動畫與特殊圖形可能會跑版或無法完美呈現。僅適合用來快速瀏覽簡報文字與基本架構。
 2. **壓縮檔 (ZIP/TGZ/GZ)**：提供樹狀結構預覽與查看內部檔案。僅支援部分檔案的預覽。
 3. **Excel 試算表 (XLS/XLSX)**：僅提供純表格與文字資料的預覽，無法顯示圖表 (Charts)、巨集 (Macros) 或過於複雜的儲存格樣式。
 4. **大檔案效能**：由於依賴使用者的電腦運算能力，開啟過大的簡報檔、Excel 或含有數萬個檔案的壓縮包時，可能會有短暫卡頓或記憶體消耗較大的情況。
@@ -44,8 +44,13 @@
 * Highlight.js (用於程式碼語法高亮): https://highlightjs.org/
 * JSZip (用於解析 ZIP 壓縮檔): https://stuk.github.io/jszip/
 * Pako (用於解壓縮 TGZ/GZ 檔案): https://github.com/nodeca/pako
-* SheetJS (用於讀取 Excel): https://sheetjs.com/
-* PPTXjs (用於渲染 PowerPoint): https://pptxjs.com/
+* ExcelJS (用於讀取 .xlsx 及其樣式): https://github.com/exceljs/exceljs
+* SheetJS (用於讀取 .xls，以及 ExcelJS 失敗時的後備): https://sheetjs.com/
+* Marked (用於渲染 Notebook 與壓縮檔內的 Markdown): https://marked.js.org/
+* PPTXjs (用於渲染 PowerPoint，MIT): https://pptxjs.com/
+* EMFJS，來自 rtf.js (用於轉換簡報中的 EMF 圖片，MIT): https://github.com/tbluemel/rtf.js
+* UTIF.js (用於轉換簡報中的 TIFF 圖片，MIT): https://github.com/photopea/UTIF.js
+* 工具列圖示取自 pdf.js (MPL 2.0): https://github.com/mozilla/pdf.js
 
 ## 開源協議
 

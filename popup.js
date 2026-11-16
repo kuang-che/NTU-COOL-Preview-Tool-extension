@@ -1,19 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const defaultSettings = {
-        images: 'png, jpg, jpeg, gif, svg, webp',
-        videos: 'mp4, webm, ogg, mov',
-        audios: 'mp3, wav, ogg, m4a',
-        codes: 'py, v, sv, c, cpp, js, html, css, json, md, sh, java, m',
-        plaintext: 'txt, log, csv',
-        archives: 'zip, tgz, gz',
-        excels: 'xls, xlsx',
-        powerpoints: 'ppt, pptx',
-        jupyter: 'ipynb'
-    };
+    // DEFAULT_SETTINGS 定義在 defaults.js（與 content.js 共用），popup.html 會先載入它
+    const fields = Object.keys(DEFAULT_SETTINGS);
 
-    const fields = Object.keys(defaultSettings);
-
-    chrome.storage.sync.get(defaultSettings, (items) => {
+    chrome.storage.sync.get(DEFAULT_SETTINGS, (items) => {
         fields.forEach(field => {
             document.getElementById(field).value = items[field];
         });
