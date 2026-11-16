@@ -3,9 +3,13 @@ const escapeHTML = (str) => {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 };
 
-const SUPPORTED_TEXT_EXTS = ['txt', 'md', 'csv', 'json', 'js', 'py', 'html', 'css', 'c', 'cpp', 'h', 'hpp', 'java', 'sh', 'v', 'sv', 'log', 'xml', 'ipynb'];
-const SUPPORTED_IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'];
-const LANG_MAP = { py: 'python', v: 'verilog', sv: 'verilog', c: 'c', cpp: 'cpp', js: 'javascript', html: 'xml', css: 'css', json: 'json', md: 'markdown', sh: 'bash', java: 'java', m: 'matlab' };
+// 可預覽的類型跟隨使用者的設定：content.js 經 window.PV.types 傳入「副檔名 → { category, lang }」。
+// PDF 不在設定裡（使用者無法調整），一律可預覽；沒有副檔名的檔案當成純文字。
+const TYPES = (window.PV && window.PV.types) || {};
+const PREVIEWABLE = ['code', 'jupyter', 'image', 'video', 'audio', 'pdf'];
+const MIME = { pdf: 'application/pdf', svg: 'image/svg+xml', jpg: 'image/jpeg', mov: 'video/quicktime', mp3: 'audio/mpeg', m4a: 'audio/mp4' };
+const typeOf = (path, ext) => ext === 'pdf' ? { category: 'pdf' }
+    : path.split('/').pop().includes('.') ? TYPES[ext] : { category: 'code', lang: 'plaintext' };
 
 window.archiveData = {
     type: null,
@@ -63,58 +67,7 @@ function renderTreeHTML(node, prefix = '') {
     return html;
 }
 
-function renderJupyterNotebook(content) {
-    const data = JSON.parse(content);
-    if (!data.cells || !Array.isArray(data.cells)) throw new Error("無效的 Jupyter Notebook 格式");
-    
-    return data.cells.map(cell => {
-        const source = Array.isArray(cell.source) ? cell.source.join('') : (cell.source || '');
-        
-        if (cell.cell_type === 'markdown') {
-            return `<div class="ipynb-markdown" style="margin-bottom:15px;line-height:1.6;font-family:sans-serif;">${window.marked ? marked.parse(source) : escapeHTML(source)}</div>`;
-        }
-        
-        if (cell.cell_type === 'code') {
-            let html = `<div class="ipynb-code" style="margin-bottom:15px;border:1px solid #e1e4e8;border-radius:6px;overflow:hidden;">
-                <div style="background:#f6f8fa;padding:12px;border-bottom:1px solid #e1e4e8;display:flex;">
-                    <div style="color:#24292e;font-family:monospace;font-size:12px;margin-right:10px;user-select:none;">In [${cell.execution_count || ' '}]:</div>
-                    <pre style="margin:0;flex-grow:1;font-size:13px;white-space:pre-wrap;word-wrap:break-word;"><code class="language-python">${escapeHTML(source)}</code></pre>
-                </div>`;
-            
-            if (cell.outputs && cell.outputs.length > 0) {
-                html += `<div class="ipynb-outputs" style="padding:12px;background:#fff;font-family:monospace;font-size:13px;border-top:1px solid #eaecef;">`;
-                cell.outputs.forEach(out => {
-                    if (out.output_type === 'stream') {
-                        const outText = Array.isArray(out.text) ? out.text.join('') : (out.text || '');
-                        html += `<pre style="margin:0 0 8px 0;color:${out.name === 'stderr' ? '#cb2431' : '#24292e'};white-space:pre-wrap;word-wrap:break-word;">${escapeHTML(outText)}</pre>`;
-                    } else if (['execute_result', 'display_data'].includes(out.output_type) && out.data) {
-                        if (out.data['image/png']) {
-                            const b64 = Array.isArray(out.data['image/png']) ? out.data['image/png'].join('') : out.data['image/png'];
-                            html += `<div style="margin-bottom:8px;"><img src="data:image/png;base64,${b64.replace(/\n/g, '')}" style="max-width:100%;height:auto;"></div>`;
-                        } else if (out.data['image/jpeg']) {
-                            const b64 = Array.isArray(out.data['image/jpeg']) ? out.data['image/jpeg'].join('') : out.data['image/jpeg'];
-                            html += `<div style="margin-bottom:8px;"><img src="data:image/jpeg;base64,${b64.replace(/\n/g, '')}" style="max-width:100%;height:auto;"></div>`;
-                        } else if (out.data['text/plain']) {
-                            const outText = Array.isArray(out.data['text/plain']) ? out.data['text/plain'].join('') : (out.data['text/plain'] || '');
-                            html += `<pre style="margin:0 0 8px 0;color:#24292e;white-space:pre-wrap;word-wrap:break-word;">${escapeHTML(outText)}</pre>`;
-                        }
-                    } else if (out.output_type === 'error') {
-                        const traceback = out.traceback ? out.traceback.join('\n').replace(/\u001b\[.*?m/g, '') : (out.evalue || '');
-                        html += `<pre style="margin:0 0 8px 0;color:#cb2431;white-space:pre-wrap;word-wrap:break-word;">${escapeHTML(traceback)}</pre>`;
-                    }
-                });
-                html += `</div>`;
-            }
-            return html + `</div>`;
-        }
-        
-        if (cell.cell_type === 'raw') {
-            return `<div class="ipynb-raw" style="margin-bottom:15px;background:#f1f1f1;padding:10px;border-radius:4px;"><pre style="margin:0;font-size:13px;white-space:pre-wrap;word-wrap:break-word;">${escapeHTML(source)}</pre></div>`;
-        }
-        
-        return '';
-    }).join('');
-}
+// Notebook 的渲染在 ipynb_parser.js（window.renderJupyterNotebook），兩處共用同一份
 
 async function extractFileData(path, isMedia) {
     if (window.archiveData.type === 'zip') {
@@ -138,12 +91,11 @@ async function handleFileClick(e) {
     e.target.style.fontWeight = 'bold';
 
     const ext = path.split('.').pop().toLowerCase();
-    const isText = SUPPORTED_TEXT_EXTS.includes(ext) || !path.includes('.');
-    const isImage = SUPPORTED_IMAGE_EXTS.includes(ext);
-    const isPdf = ext === 'pdf';
+    const type = typeOf(path, ext) || {}, category = type.category;
+    const isPdf = category === 'pdf', isImage = category === 'image';
     const viewer = document.getElementById('archive-viewer-content');
-    
-    if (!isText && !isImage && !isPdf) {
+
+    if (!PREVIEWABLE.includes(category)) {
         viewer.innerHTML = `<div style="padding:20px;text-align:center;color:#666;display:flex;align-items:center;justify-content:center;height:100%;">不支援預覽此格式的檔案：${escapeHTML(ext)}</div>`;
         return;
     }
@@ -151,25 +103,27 @@ async function handleFileClick(e) {
     viewer.innerHTML = `<div style="padding:20px;color:#666;">讀取中...</div>`;
     
     try {
-        const isMedia = isImage || isPdf;
+        const isMedia = category !== 'code' && category !== 'jupyter';
         const data = await extractFileData(path, isMedia);
 
         if (isMedia) {
-            const mimeType = isPdf ? 'application/pdf' : `image/${ext === 'svg' ? 'svg+xml' : ext}`;
-            const blobUrl = URL.createObjectURL(new Blob([data], { type: mimeType }));
-            
+            const blobUrl = URL.createObjectURL(new Blob([data], { type: MIME[ext] || `${category}/${ext}` }));
+            const centered = 'padding:20px;text-align:center;height:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;';
+
             if (isPdf) {
                 viewer.innerHTML = `<div style="height:100%;box-sizing:border-box;"><iframe src="${blobUrl}" style="width:100%;height:100%;border:none;"></iframe></div>`;
+            } else if (isImage) {
+                viewer.innerHTML = `<div style="${centered}"><img src="${blobUrl}" style="max-width:100%;max-height:100%;border:1px solid #ddd;box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>`;
             } else {
-                viewer.innerHTML = `<div style="padding:20px;text-align:center;height:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;"><img src="${blobUrl}" style="max-width:100%;max-height:100%;border:1px solid #ddd;box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>`;
+                viewer.innerHTML = `<div style="${centered}"><${category} src="${blobUrl}" controls style="max-width:100%;max-height:100%;outline:none;"></${category}></div>`;
             }
-        } else if (ext === 'ipynb') {
+        } else if (category === 'jupyter') {
             viewer.innerHTML = `<div style="padding:20px;height:100%;box-sizing:border-box;overflow:auto;">${renderJupyterNotebook(data)}</div>`;
             if (window.hljs) {
                 viewer.querySelectorAll('pre code').forEach(block => window.hljs.highlightElement(block));
             }
         } else {
-            const langClass = LANG_MAP[ext] || ext;
+            const langClass = type.lang;
             viewer.innerHTML = `<pre style="margin:0;padding:15px;font-size:14px;white-space:pre-wrap;word-wrap:break-word;background:#f6f8fa;height:100%;box-sizing:border-box;overflow:auto;"><code class="language-${langClass}">${escapeHTML(data)}</code></pre>`;
             if (window.hljs && data.length < 100000) {
                 window.hljs.highlightElement(viewer.querySelector('code'));
@@ -187,19 +141,16 @@ function setupResizer() {
     const container = document.getElementById('archive-container');
     let isResizing = false;
 
+    // 滑過變色用事件監聽，不用行內的 onmouseover（行內事件處理器不符合擴充功能的內容安全政策）
+    resizer.addEventListener('mouseover', () => { if (!isResizing) resizer.style.background = '#c8ccd1'; });
+    resizer.addEventListener('mouseout', () => { if (!isResizing) resizer.style.background = '#e1e4e8'; });
+
     resizer.addEventListener('mousedown', (e) => {
         e.preventDefault();
         isResizing = true;
         document.body.style.cursor = 'col-resize';
         viewer.style.pointerEvents = 'none';
         resizer.style.background = '#0066cc';
-    });
-
-    resizer.addEventListener('mouseover', () => {
-        if (!isResizing) resizer.style.background = '#c8ccd1';
-    });
-    resizer.addEventListener('mouseout', () => {
-        if (!isResizing) resizer.style.background = '#e1e4e8';
     });
 
     window.addEventListener('mousemove', (e) => {
@@ -220,11 +171,8 @@ function setupResizer() {
 }
 
 async function parseArchiveFile() {
-    const absoluteUrl = window.TARGET_URL || document.body.getAttribute('data-url');
-    const ext = window.TARGET_EXT || document.body.getAttribute('data-ext');
-    if (!absoluteUrl || !ext) return;
-    window.TARGET_URL = absoluteUrl;
-    window.TARGET_EXT = ext;
+    if (!window.TARGET_URL || !window.TARGET_EXT) return;
+    const { TARGET_URL: absoluteUrl, TARGET_EXT: ext } = window;
     
     document.getElementById('render-content').innerHTML = `
         <div id="archive-container" style="display:flex;width:1600px;max-width:100%;box-sizing:border-box;height:75vh;min-height:450px;overflow:hidden;font-family:sans-serif;border:1px solid #ddd;border-radius:4px;position:relative;margin:0 auto;">
